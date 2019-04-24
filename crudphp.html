@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>crud with vue php</title>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/line-awesome.min.css">
+  <!-- <link rel="stylesheet" type="text/css" href="css/mystyle.css"> -->
+	<script src="vue.js"></script>
+ <script src="js/jquery.min.js"></script>
+<!--   <script src="js/popover.js"></script> -->
+  <script src="js/bootstrap.min.js">
+  </script><script src="axios/axios.min.js"></script>
+  <style type="text/css">
+    .ra-modal{
+      width: 50%;
+      background-color: white;
+      color:black;
+      margin: auto;
+      min-height: 350px;
+    
+      
+    }
+    .modal-content{
+      background-color: rgba(0,0,0,0.4);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: 0;
+      position: fixed;
+    }
+    .my-form{
+      padding: 60px;
+    }
+    .head{
+      text-align: right;
+      color: red;
+      font-weight: bolder;
+      padding: 10px;
+      font-size: 18px;
+    }
+    .head span{
+      text-align: left
+    }
+    .head i:hover{
+      cursor: pointer;
+      transform: rotate(180deg);
+      transition: transform linear 260ms;
+
+    }
+    .my-btn button{
+      float: right
+    }
+    .buttons button{
+      float: right;
+      margin-right: 8px;
+    }
+    .fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+    /*transform: translateY(50%);
+      transition:transform ease-in-out 500ms;*/ 
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+/* transform: translateY(0%);*/
+}
+.bounce-enter-active {
+  animation: bounce-in .5s;
+}
+.bounce-leave-active {
+  animation: bounce-in .5s reverse;
+}
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+  </style>
+</head>
+<body>
+	<div class="container" id="app"> <br>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">Navbar</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Link</a>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Dropdown
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href="#">Action</a>
+          <a class="dropdown-item" href="#">Another action</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="#">Something else here</a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" href="#">Disabled</a>
+      </li>
+    </ul>
+    <form class="form-inline my-2 my-lg-0">
+      <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>
+  </div>
+</nav>
+      <div class="alert alert-success" role="alert" v-if="successmessage">
+        <h4 class="alert-heading" >{{successmessage}}</h4> 
+      </div>
+      <div class="alert alert-danger" role="alert" v-if="errormessage">
+        <h4 class="alert-heading" >{{errormessage}}</h4> 
+      </div>
+   <br> 
+    <div class="my-btn" >
+      <span><b>List of User</b></span>
+      <button type="button" class="btn btn-primary " @click="showmodaladd=true">Add New</button>
+    </div> <hr>
+    <br>
+   <table class="table table-sm ">
+  <thead class="table-info">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">First Name</th>
+      <th scope="col">Last Name</th>
+      <th scope="col">Username</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr v-for="user in users">
+      <th scope="row" >{{user.usersTable_id}}</th>
+      <td>{{user.fistname}}</td>
+      <td>{{user.lastname}}</td>
+      <td>{{user.username}}</td>
+      <td><button type="button" class="btn btn-info"  @click="showmodaledit = true; selectUser(user)">Edit</button> &nbsp; <button type="button" class="btn btn-danger" @click="showmodaldelete= true; selectUser(user)">Del</button></td>
+    </tr>
+    
+  </tbody>
+</table> 
+<!-- add modal -->
+ <transition name="fade">
+
+
+<div class="modal-content" v-if="showmodaladd" id="addmodal">
+  <div class="ra-modal" >
+
+    <p class="head bg-info"><i class="la la-times "  @click="showmodaladd= false"></i></p>
+    <form method="post" class="my-form" action="javascript:void(0)">
+      <h5>Add user</h5>
+  <div class="form-group row">
+    <label for="staticEmail" class="col-sm-3 col-form-label">First name</label>
+    <div class="col-sm-9">
+      <input type="text"  class="form-control" id="staticEmail" placeholder="First name" v-model="newUser.fistname">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputPassword" class="col-sm-3 col-form-label">Last Name</label>
+    <div class="col-sm-9">
+      <input type="text" class="form-control" id="inputPassword" placeholder="Last Name" v-model="newUser.lastname">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputPassword" class="col-sm-3 col-form-label">Username</label>
+    <div class="col-sm-9">
+      <input type="text" class="form-control" id="inputPassword" placeholder="Username" v-model="newUser.username">
+    </div>
+  </div>
+  <div class="col-sm-9">
+     <button type="button" class="btn btn-info"  @click="showmodaladd = false; saveUser()">Add user</button>
+    </div>
+</form>
+</div>
+</div>
+  </transition>
+<!-- end of add modal -->
+
+<!-- edit modal -->
+  <div class="modal-content" v-if="showmodaledit" id="editmodal">
+  <div class="ra-modal" >
+
+    <p class="head bg-info"><i class="la la-times "  @click="showmodaledit= false"></i></p>
+    <form method="post" class="my-form">
+      <h5>Edit user</h5>
+  <div class="form-group row">
+    <label for="staticEmail" class="col-sm-3 col-form-label">First name</label>
+    <div class="col-sm-9">
+      <input type="text"  class="form-control" id="staticEmail" placeholder="First name" v-model="clickedUser.fistname">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputPassword" class="col-sm-3 col-form-label">Last Name</label>
+    <div class="col-sm-9">
+      <input type="text" class="form-control" id="inputPassword" placeholder="Last Name"  v-model="clickedUser.lastname">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputPassword" class="col-sm-3 col-form-label">Username</label>
+    <div class="col-sm-9">
+      <input type="text" class="form-control" id="inputPassword" placeholder="Username"  v-model="clickedUser.username">
+    </div>
+  </div>
+  <div class="form-group row">
+    
+    <div class="col-sm-9">
+     <button type="button" class="btn btn-info"  @click="showmodaledit = false;updateUser(user) ">Update</button>
+    </div>
+  </div>
+</form>
+</div>
+</div>
+<!-- end of edit modal -->
+
+
+<!-- Delete modal -->
+  <transition name="bounce">
+  <div class="modal-content" v-if="showmodaldelete" id="deletemodal">
+  <div class="ra-modal" >
+
+    <p class="head bg-info"><i class="la la-times "  @click="showmodaldelete= false"></i></p>
+    <p class="text-center">You  are going to delete {{clickedUser.username}}</p>
+    <br><br><br><br>
+   <div class="buttons container">
+      <button type="button" class="btn btn-success" @click="showmodaldelete = false; deleteUser(user)">Yes</button> &nbsp;&nbsp;&nbsp;
+    <button type="button" class="btn btn-info" @click="showmodaldelete = false">No</button>
+   </div>
+</div>
+</div>
+</transition>
+<!-- end of Delete modal -->
+  </div><br>
+  <script>
+     var app = new Vue({
+        el:"#app",
+        data:{
+          showmodaladd:false,
+          showmodaledit:false,
+          showmodaldelete:false,
+          successmessage:"",
+          errormessage:"",
+          users:[],
+          newUser:{fistname:"",lastname:"",username:""},
+          clickedUser:{}
+
+        },
+        mounted:function(){
+          console.log('mounted');
+          this.getAllUsers();
+        },
+        methods:{
+          getAllUsers: function(){
+            axios.get("http://localhost/crudphpvue/api.php?action=read")
+            .then(function(response){
+              // console.log(response);
+              if (response.data.error) {
+                app.errormessage = response.data.message;
+              }else{
+                app.users=response.data.users;
+              }
+            })
+           
+          },
+          saveUser: function(){
+            // console.log(app.newUser);
+            var formData = app.toformData(app.newUser);
+             axios.post("http://localhost/crudphpvue/api.php?action=create", formData)
+            .then(function(response){
+              
+              // app.newUser={fistname:"",lastname:"",username:""};
+
+              if (response.data.error ==true) {
+                app.errormessage = response.data.message;
+              }else{
+                app.successmessage = response.data.message;
+                app.getAllUsers();
+              }
+            })
+          },
+          selectUser: function(user){
+              app.clickedUser=user;
+          },
+          updateUser: function(user){
+               var formData = app.toformData(app.clickedUser);
+             axios.post("http://localhost/crudphpvue/api.php?action=update", formData)
+            .then(function(response){
+              
+              app.clickedUser={};
+
+              if (response.data.error) {
+                app.errormessage = response.data.error;
+              }else{
+                 app.successmessage = response.data.message;
+                app.getAllUsers();
+              }
+            })
+          },
+          deleteUser: function(user){
+                var formData = app.toformData(app.clickedUser);
+             axios.post("http://localhost/crudphpvue/api.php?action=delete", formData)
+            .then(function(response){
+              
+              app.clickedUser={};
+
+              if (response.data.error) {
+                app.errormessage = response.data.message;
+              }else{
+                 app.successmessage = response.data.message;
+                app.getAllUsers();
+              }
+            })
+          },
+          toformData: function(obj){
+            var form_data = new FormData();
+            for(var key in obj){
+              form_data.append(key,obj[key]);
+            }
+            return form_data;
+          },
+
+          clearMessage: function(){
+            app.successmessage = "";
+            app.errormessage = "";
+          }
+        }
+
+      })
+  </script>
+ 
+</body>
+</html>
